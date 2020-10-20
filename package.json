@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.10",
+    "@react-native-community/viewpager": "^4.1.6",
     "@react-navigation/native": "^5.7.6",
     "@react-navigation/stack": "^5.9.3",
     "axios": "^0.20.0",
@@ -18,14 +19,17 @@
     "react-native": "0.63.3",
     "react-native-cardview": "^2.0.5",
     "react-native-gesture-handler": "^1.8.0",
+    "react-native-maps": "0.27.1",
     "react-native-ratings": "^7.3.0",
     "react-native-reanimated": "^1.13.1",
     "react-native-safe-area-context": "^3.1.8",
     "react-native-screens": "^2.11.0",
     "react-native-sqlite-storage": "^5.0.0",
     "react-native-star-rating": "^1.1.0",
+    "react-native-swiper": "^1.6.0-nightly.5",
     "react-redux": "^7.2.0",
-    "redux": "^4.0.5"
+    "redux": "^4.0.5",
+    "rn-viewpager": "^1.2.9"
   },
   "devDependencies": {
     "@babel/core": "7.12.3",

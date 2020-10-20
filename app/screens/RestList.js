@@ -6,7 +6,7 @@ import {
   ScrollView,
   Dimensions,
   TouchableOpacity,
-  Linking,
+  StyleSheet,
 } from 'react-native';
 import {Rating} from 'react-native-ratings';
 import Constant from '../config/Constant';
@@ -20,31 +20,28 @@ import apiConfig from '../config/apiConfig';
 
 export default RestList = () => {
   const restList = useSelector((state) => state.CommonReducers.restList);
-  const [isUpdate,setIsUpdate] = useState(false)
+  const [width, setWidth] = useState(0);
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  console.log('restlist', restList);
 
   useEffect(() => {
-
     async function fetchData() {
-        const res = await DbRnRestMap.getApiData(
-            apiConfig.Base_url + Constant.api.restList,
-          );
-          if (res != null && res.length > 0) {
-            dispatch(CommonActions.updateRestList(res));
-          } else {
-            RestService.getRestList(Constant.api.restList, true)
-              .then((res) => {
-                dispatch(CommonActions.updateRestList(res.data));
-              })
-              .catch((error) => {
-                console.log('', error);
-              });
-          }
+      const res = await DbRnRestMap.getApiData(
+        apiConfig.Base_url + Constant.api.restList,
+      );
+      if (res != null && res.length > 0) {
+        dispatch(CommonActions.updateRestList(res));
+      } else {
+        RestService.getRestList(Constant.api.restList, true)
+          .then((res) => {
+            dispatch(CommonActions.updateRestList(res.data));
+          })
+          .catch((error) => {
+            console.log('', error);
+          });
       }
-      fetchData();
-  
+    }
+    fetchData();
   }, []);
 
   const ratingView = (item) => {
@@ -63,16 +60,12 @@ export default RestList = () => {
   };
 
   const openMap = (item) => {
-    const latitude = item.lat;
-    const longitude = item.lng;
-    const label = item.address;
-    const url = Platform.select({
-      ios: 'maps:' + latitude + ',' + longitude + '?q=' + label,
-      android: 'geo:' + latitude + ',' + longitude + '?q=' + label,
-    });
-    Linking.openURL(url);
+    navigation.navigate('MapView', {item: item});
   };
 
+  const onLayout = (e) => {
+    setWidth(Dimensions.get('window').width);
+  };
   const renderRow = (item, index) => {
     return (
       <TouchableOpacity
@@ -85,54 +78,29 @@ export default RestList = () => {
           cardElevation={2}
           cardMaxElevation={2}
           cornerRadius={10}>
-          <View
-            style={{
-              flexDirection: 'row',
-              backgroundColor: '#ffffff',
-              alignItems: 'center',
-              padding: 10,
-            }}>
+          <View style={style.containerStyle}>
             <Image
-              style={{height: 75, width: 75, borderRadius: 10}}
-              source={{uri: item.img[1].image}}
+              style={style.imageStyle}
+              source={
+                item.img[0].image != ''
+                  ? {uri: item.img[0].image}
+                  : require('../assets/image/placeholder.jpg')
+              }
+              defaultSource={require('../assets/image/placeholder.jpg')}
             />
-            <View
-              style={{
-                flexDirection: 'row',
-                backgroundColor: '#ffffff',
-                width: Dimensions.get('screen').width - 115,
-                justifyContent: 'space-between',
-                paddingStart: 20,
-              }}>
-              <View
-                style={{
-                  flexDirection: 'column',
-                  width: Dimensions.get('screen').width - 200,
-                }}>
-                <Text
-                  style={{
-                    fontSize: 20,
-                  }}>
-                  {item.title}
-                </Text>
+            <View style={[style.childContainer,{width:width - 115}]}>
+              <View style={[style.childSubContainer,{width:width - 200}]}>
+                <Text style={style.textStyle}>{item.title}</Text>
                 {ratingView()}
               </View>
               <TouchableOpacity
                 onPress={() => {
                   openMap(item);
                 }}>
-                <View
-                  style={{
-                    backgroundColor: '#48A215',
-                    paddingHorizontal: 15,
-                    paddingVertical: 10,
-                    borderRadius: 10,
-                    alignItems: 'flex-end',
-                    width: 55,
-                  }}>
+                <View style={style.pinContainerStyle}>
                   <Image
                     source={require('../assets/image/map.png')}
-                    style={{height: 35, width: 25}}
+                    style={style.pinImage}
                   />
                 </View>
               </TouchableOpacity>
@@ -143,10 +111,41 @@ export default RestList = () => {
     );
   };
   return (
-    <ScrollView style={{width: Dimensions.get('screen').width}}>
+    <ScrollView onLayout={onLayout} style={{width: width}}>
       {restList?.map((item, index) => {
         return renderRow(item, index);
       })}
     </ScrollView>
   );
 };
+
+const style = StyleSheet.create({
+  containerStyle: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    padding: 10,
+  },
+  imageStyle: {height: 75, width: 75, borderRadius: 10},
+  childContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    justifyContent: 'space-between',
+    paddingStart: 20,
+  },
+  childSubContainer: {
+    flexDirection: 'column',
+  },
+  textStyle: {
+    fontSize: 20,
+  },
+  pinContainerStyle: {
+    backgroundColor: '#00FA9A',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'flex-end',
+    width: 55,
+  },
+  pinImage: {height: 35, width: 25},
+});
